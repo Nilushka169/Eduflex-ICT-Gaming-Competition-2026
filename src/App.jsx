@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   loadData,
   saveData,
+  fetchCloudData,
+  saveCloudData,
   resetAllData,
   exportToJsonFile
 } from './data/storage';
@@ -34,15 +36,74 @@ export default function App() {
     }
   });
 
-  // Auto-save changes to localStorage
-  useEffect(() => {
-    saveData(data);
-  }, [data]);
+  // Cloud / MongoDB sync state
+  const [syncStatus, setSyncStatus] = useState('loading'); // 'loading' | 'synced' | 'saving' | 'error'
+  const [syncError, setSyncError] = useState('');
+  const isSavingRef = useRef(false);
 
-  const showToast = (message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
-  };
+  }, []);
+
+  const refreshFromCloud = useCallback(async (silent = false) => {
+    if (isSavingRef.current) return;
+    if (!silent) setSyncStatus('loading');
+    try {
+      const cloudData = await fetchCloudData();
+      if (!isSavingRef.current) {
+        setData(cloudData);
+        setSyncStatus('synced');
+        setSyncError('');
+      }
+    } catch (err) {
+      console.error('Cloud fetch error:', err);
+      setSyncStatus('error');
+      setSyncError(err.message || 'Database connection failed');
+      if (!silent) {
+        showToast('⚠️ Could not connect to MongoDB. Showing cached data.', 'error');
+      }
+    }
+  }, [showToast]);
+
+  // Initial load from MongoDB
+  useEffect(() => {
+    refreshFromCloud(false);
+  }, [refreshFromCloud]);
+
+  // Auto-refresh every 15 seconds so all devices stay up-to-date
+  useEffect(() => {
+    if (isMatchLive) return;
+    const interval = setInterval(() => {
+      refreshFromCloud(true);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isMatchLive, refreshFromCloud]);
+
+  // Update local state + localStorage cache + push to MongoDB
+  const commitDataChange = useCallback((updaterOrNext) => {
+    setData(prev => {
+      const next = typeof updaterOrNext === 'function' ? updaterOrNext(prev) : updaterOrNext;
+      saveData(next);
+      isSavingRef.current = true;
+      setSyncStatus('saving');
+      saveCloudData(next, ADMIN_KEYCODE)
+        .then(() => {
+          setSyncStatus('synced');
+          setSyncError('');
+        })
+        .catch((err) => {
+          console.error('Cloud save error:', err);
+          setSyncStatus('error');
+          setSyncError(err.message || 'Save failed');
+          showToast(`⚠️ Saved locally, but MongoDB sync failed: ${err.message}`, 'error');
+        })
+        .finally(() => {
+          isSavingRef.current = false;
+        });
+      return next;
+    });
+  }, [showToast]);
 
   // Handle keycode verification
   const handleKeycodeSubmit = (e) => {
@@ -81,7 +142,7 @@ export default function App() {
       matches: 0,
       isEliminated: false,
     };
-    setData(prev => ({
+    commitDataChange(prev => ({
       ...prev,
       players: [...prev.players, newPlayer],
     }));
@@ -102,7 +163,7 @@ export default function App() {
       matches: 0,
       isEliminated: false,
     }));
-    setData(prev => ({
+    commitDataChange(prev => ({
       ...prev,
       players: [...prev.players, ...newPlayers],
     }));
@@ -112,7 +173,7 @@ export default function App() {
   // Update/Rename player (Admin only)
   const handleUpdatePlayer = (id, newName) => {
     if (!isAdmin) return;
-    setData(prev => ({
+    commitDataChange(prev => ({
       ...prev,
       players: prev.players.map(p => p.id === id ? { ...p, name: newName } : p),
     }));
@@ -126,7 +187,7 @@ export default function App() {
     }
     const p = data.players.find(x => x.id === id);
     if (!window.confirm(`Are you sure you want to delete "${p?.name || 'this player'}"?`)) return;
-    setData(prev => ({
+    commitDataChange(prev => ({
       ...prev,
       players: prev.players.filter(x => x.id !== id),
     }));
@@ -139,7 +200,7 @@ export default function App() {
       showToast('🔒 Admin keycode required to reactivate players.', 'error');
       return;
     }
-    setData(prev => ({
+    commitDataChange(prev => ({
       ...prev,
       players: prev.players.map(p => p.id === id ? { ...p, isEliminated: false } : p),
     }));
@@ -156,22 +217,6 @@ export default function App() {
 
     const allMatchPlayerIds = [...team1PlayerIds, ...team2PlayerIds];
 
-    const updatedPlayers = data.players.map(p => {
-      if (allMatchPlayerIds.includes(p.id)) {
-        const addedPoints = pointsToAward[p.id] || 0;
-        const isWinner = winningPlayerIds.includes(p.id);
-
-        return {
-          ...p,
-          points: p.points + addedPoints,
-          wins: isWinner ? p.wins + 1 : p.wins,
-          matches: p.matches + 1,
-          isEliminated: isWinner ? false : true,
-        };
-      }
-      return p;
-    });
-
     const matchRecord = {
       id: Date.now(),
       title,
@@ -185,9 +230,23 @@ export default function App() {
       losingPlayerIds: allMatchPlayerIds.filter(id => !winningPlayerIds.includes(id)),
     };
 
-    setData(prev => ({
+    commitDataChange(prev => ({
       ...prev,
-      players: updatedPlayers,
+      players: prev.players.map(p => {
+        if (allMatchPlayerIds.includes(p.id)) {
+          const addedPoints = pointsToAward[p.id] || 0;
+          const isWinner = winningPlayerIds.includes(p.id);
+
+          return {
+            ...p,
+            points: p.points + addedPoints,
+            wins: isWinner ? p.wins + 1 : p.wins,
+            matches: p.matches + 1,
+            isEliminated: isWinner ? false : true,
+          };
+        }
+        return p;
+      }),
       matchHistory: [matchRecord, ...prev.matchHistory],
     }));
 
@@ -203,7 +262,7 @@ export default function App() {
       return;
     }
     const reset = resetAllData();
-    setData(reset);
+    commitDataChange(reset);
     setShowResetModal(false);
     showToast('🔄 Competition data has been reset to defaults.', 'info');
   };
@@ -221,7 +280,7 @@ export default function App() {
       try {
         const imported = JSON.parse(e.target.result);
         if (imported.players && Array.isArray(imported.players)) {
-          setData(imported);
+          commitDataChange(imported);
           showToast('📥 Data file imported successfully!');
         } else {
           showToast('⚠️ Invalid file format', 'error');
@@ -294,6 +353,16 @@ export default function App() {
 
             {/* Header Action Controls */}
             <div className="header-controls">
+              <button
+                className={`sync-status-pill sync-${syncStatus}`}
+                onClick={() => refreshFromCloud(false)}
+                title={syncError ? `DB Error: ${syncError} (Click to retry)` : 'Click to refresh live data from MongoDB'}
+              >
+                {syncStatus === 'loading' && '⏳ Syncing...'}
+                {syncStatus === 'saving' && '☁️ Saving...'}
+                {syncStatus === 'synced' && '☁️ Live DB'}
+                {syncStatus === 'error' && '⚠️ DB Offline'}
+              </button>
               <button
                 className="action-btn export-btn"
                 onClick={() => exportToJsonFile(data)}

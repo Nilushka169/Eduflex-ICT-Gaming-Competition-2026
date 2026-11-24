@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'eduflex_ict_gaming_app_v2';
+const API_ENDPOINT = '/api/data';
 
 // Initial starter players if completely empty
 export function getDefaultData() {
@@ -15,18 +16,22 @@ export function getDefaultData() {
   };
 }
 
+function normalizeData(parsed) {
+  if (!parsed || !Array.isArray(parsed.players)) return getDefaultData();
+  return {
+    players: parsed.players.map(p => ({
+      ...p,
+      isEliminated: Boolean(p.isEliminated),
+    })),
+    matchHistory: Array.isArray(parsed.matchHistory) ? parsed.matchHistory : [],
+  };
+}
+
 export function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return getDefaultData();
-    const parsed = JSON.parse(raw);
-    if (!parsed.players || !Array.isArray(parsed.players)) return getDefaultData();
-    // Ensure isEliminated flag exists on all players
-    parsed.players = parsed.players.map(p => ({
-      ...p,
-      isEliminated: Boolean(p.isEliminated),
-    }));
-    return parsed;
+    return normalizeData(JSON.parse(raw));
   } catch {
     return getDefaultData();
   }
@@ -36,8 +41,39 @@ export function saveData(data) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
-    console.error('Failed to save data:', e);
+    console.error('Failed to save local cache:', e);
   }
+}
+
+export async function fetchCloudData() {
+  const res = await fetch(API_ENDPOINT, {
+    method: 'GET',
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || `Server error (${res.status})`);
+  }
+  const json = await res.json();
+  const normalized = normalizeData(json);
+  saveData(normalized);
+  return normalized;
+}
+
+export async function saveCloudData(data, keycode) {
+  const res = await fetch(API_ENDPOINT, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-keycode': keycode,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || `Failed to save (${res.status})`);
+  }
+  return res.json();
 }
 
 export function resetAllData() {
