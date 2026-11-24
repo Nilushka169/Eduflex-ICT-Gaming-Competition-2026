@@ -307,10 +307,10 @@ export default function App() {
             {/* Title & Keycode Verification Box */}
             <div className="brand-group">
               <div className="trophy-hexagon">
-                <span>🎮</span>
+                <img src="/trophy.png" alt="Eduflex ICT Gaming Competition Logo" className="trophy-logo-img" />
               </div>
               <div>
-                <h1 className="tournament-title">Eduflex ICT Gaming Competition 2026</h1>
+                <h1 className="tournament-title">ICT Gaming Competition 2026</h1>
                 <div className="tagline-badge">Artofict</div>
               </div>
 
