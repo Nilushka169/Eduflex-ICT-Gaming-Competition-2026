@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import PrizeModal from './PrizeModal';
 import './Leaderboard.css';
 
 export default function Leaderboard({ players, totalMatches }) {
   const [search, setSearch] = useState('');
+  const [showPrizeModal, setShowPrizeModal] = useState(false);
 
   const sortedPlayers = [...players].sort((a, b) => b.points - a.points || b.wins - a.wins);
   const topScore = sortedPlayers[0]?.points || 0;
@@ -13,6 +15,28 @@ export default function Leaderboard({ players, totalMatches }) {
 
   return (
     <div className="leaderboard-root">
+      {/* Emphasized Gold Animated Winning Prize Button */}
+      <div className="winning-prize-banner-wrap">
+        <button
+          type="button"
+          className="winning-prize-gold-btn"
+          onClick={() => setShowPrizeModal(true)}
+        >
+          <span className="prize-btn-shine" aria-hidden="true" />
+          <span className="prize-btn-left">
+            <span className="prize-btn-icon" aria-hidden="true">🏆</span>
+            <span className="prize-btn-text-group">
+              <span className="prize-btn-kicker">GRAND CHAMPION WINNING PRIZE</span>
+              <span className="prize-btn-headline">REDRAGON H260 RGB GAMING WHITE HEADSET</span>
+            </span>
+          </span>
+          <span className="prize-btn-cta">
+            <span>View Prize</span>
+            <span className="prize-btn-arrow" aria-hidden="true">✨</span>
+          </span>
+        </button>
+      </div>
+
       {/* Top Overview Cards */}
       <div className="overview-stats-grid">
         <div className="overview-card">
@@ -197,6 +221,10 @@ export default function Leaderboard({ players, totalMatches }) {
           </tbody>
         </table>
       </div>
+
+      {showPrizeModal && (
+        <PrizeModal onClose={() => setShowPrizeModal(false)} />
+      )}
     </div>
   );
 }

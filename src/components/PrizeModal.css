@@ -1,0 +1,328 @@
+/* ============================================================
+   PrizeModal.css - Fullscreen Expand Popup & Image Carousel
+   ============================================================ */
+
+.prize-modal-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  background: radial-gradient(circle at 50% 35%, rgba(30, 27, 56, 0.96), rgba(5, 7, 15, 0.99));
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  animation: prizeBackdropFade 0.28s ease-out forwards;
+}
+
+.prize-modal-backdrop-glow {
+  position: fixed;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.22), rgba(139, 92, 246, 0.12), transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes prizeBackdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.prize-modal-expand-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  transform-origin: center center;
+  animation: prizeExpandIn 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes prizeExpandIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.28);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Close Button */
+.prize-close-btn {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  background: rgba(15, 23, 42, 0.85);
+  color: #fef3c7;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.prize-close-btn:hover {
+  background: rgba(239, 68, 68, 0.28);
+  border-color: #f87171;
+  color: #ffffff;
+  transform: scale(1.06);
+}
+
+.prize-close-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* Header */
+.prize-modal-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.prize-champion-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(251, 191, 36, 0.12));
+  border: 1px solid rgba(251, 191, 36, 0.6);
+  color: #fde047;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.28);
+}
+
+.prize-modal-title {
+  font-size: clamp(1.25rem, 3.2vw, 2.15rem);
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  background: linear-gradient(135deg, #ffffff 10%, #fde047 55%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+.prize-modal-subtitle {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Carousel */
+.prize-carousel-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.carousel-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(260px, 46vh, 440px);
+  background: radial-gradient(circle at center, #ffffff 45%, #e2e8f0 100%);
+  border-radius: 22px;
+  border: 2px solid rgba(251, 191, 36, 0.55);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.65),
+    0 0 40px rgba(245, 158, 11, 0.22);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.carousel-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.25));
+  user-select: none;
+}
+
+.carousel-counter-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #fde047;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 50px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.carousel-nav-btn {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  background: rgba(15, 23, 42, 0.85);
+  color: #fde047;
+  font-size: 1.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.carousel-nav-btn:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #0f172a;
+  transform: scale(1.1);
+}
+
+.carousel-caption {
+  font-size: 0.88rem;
+  color: #fde68a;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Thumbnails */
+.carousel-thumbnails {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.carousel-thumb-btn {
+  width: 68px;
+  height: 54px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: #ffffff;
+  padding: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.carousel-thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.carousel-thumb-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.carousel-thumb-btn.active {
+  opacity: 1;
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.55);
+  transform: translateY(-2px) scale(1.06);
+}
+
+/* Spec Chips */
+.prize-specs-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.prize-spec-chip {
+  padding: 6px 12px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .prize-modal-fullscreen {
+    padding: 16px 12px;
+  }
+
+  .prize-close-btn {
+    top: 12px;
+    right: 12px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .prize-carousel-wrapper {
+    gap: 6px;
+  }
+
+  .carousel-nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.5rem;
+  }
+
+  .carousel-thumb-btn {
+    width: 56px;
+    height: 46px;
+  }
+}

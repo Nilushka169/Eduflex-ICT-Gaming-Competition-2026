@@ -442,3 +442,173 @@
     font-size: 1.1rem;
   }
 }
+
+/* ============================================================
+   Emphasized Gold Animated Winning Prize Button
+   ============================================================ */
+.winning-prize-banner-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.winning-prize-gold-btn {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-radius: 18px;
+  border: 2px solid rgba(254, 240, 138, 0.85);
+  background: linear-gradient(120deg, #b45309 0%, #f59e0b 32%, #fde047 52%, #f59e0b 74%, #b45309 100%);
+  background-size: 220% 220%;
+  color: #1c1002;
+  cursor: pointer;
+  text-align: left;
+  box-shadow:
+    0 8px 28px rgba(245, 158, 11, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+  animation:
+    prizeGoldFlow 4.5s ease-in-out infinite,
+    prizeGoldPulse 2.4s ease-in-out infinite;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+}
+
+.winning-prize-gold-btn:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow:
+    0 14px 38px rgba(251, 191, 36, 0.65),
+    0 0 28px rgba(254, 240, 138, 0.5);
+}
+
+.winning-prize-gold-btn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+@keyframes prizeGoldFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes prizeGoldPulse {
+  0%, 100% {
+    box-shadow:
+      0 8px 26px rgba(245, 158, 11, 0.38),
+      0 0 14px rgba(253, 224, 71, 0.28);
+  }
+  50% {
+    box-shadow:
+      0 10px 36px rgba(251, 191, 36, 0.68),
+      0 0 28px rgba(254, 240, 138, 0.55);
+  }
+}
+
+.prize-btn-shine {
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transform: skewX(-24deg);
+  animation: prizeShineSweep 3.2s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes prizeShineSweep {
+  0% { left: -75%; }
+  45%, 100% { left: 135%; }
+}
+
+.prize-btn-left {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.prize-btn-icon {
+  font-size: 2.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+  animation: prizeTrophyBounce 2.2s ease-in-out infinite;
+}
+
+@keyframes prizeTrophyBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(-6deg); }
+}
+
+.prize-btn-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prize-btn-kicker {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #451a03;
+}
+
+.prize-btn-headline {
+  font-size: clamp(0.98rem, 2.2vw, 1.32rem);
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: #1c1002;
+  line-height: 1.2;
+}
+
+.prize-btn-cta {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border-radius: 50px;
+  background: #1c1002;
+  color: #fde047;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.winning-prize-gold-btn:hover .prize-btn-cta {
+  transform: scale(1.05);
+}
+
+.prize-btn-arrow {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .winning-prize-gold-btn {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .prize-btn-cta {
+    justify-content: center;
+    width: 100%;
+  }
+}
